@@ -1,18 +1,26 @@
 from ManimR import *
-from math import factorial, ceil, sqrt, exp
+from math import factorial, ceil, sqrt, exp, nan
 
 
 class MorsePotential(VGroup):
     def __init__(self):
         super(MorsePotential, self).__init__()
 
+        self.axe = Axes(x_range=[0, 5], y_range=[0, 8])
+
         self.n = 1
-        self.w0 = 100
+        self.w0 = 50
         self.m1 = 1
         self.m2 = 1
-        self.func = FunctionGraph(self.__psi_density_squared_internal__, x_range=[-8, 8])
+        self.func =  self.axe.plot(self.__psi_density_squared_internal__, x_range=[-4, 4])
 
-        self.add(func)
+        self.De = 2
+        self.Vre = 0
+        self.re = 1
+        self.a = 2
+        self.morse = self.axe.plot(self.__morse_internal__, x_range=[0.8, 3])
+
+        self.add(self.axe, self.morse)
 
     def __psi_internal__(self, x: float) -> float:
         return MorsePotential.psi(x, self.n, self.w0, self.m1, self.m2)
@@ -20,19 +28,21 @@ class MorsePotential(VGroup):
     def __psi_density_squared_internal__(self, x: float) -> float:
         return MorsePotential.psi_density_squared(x, self.n, self.w0, self.m1, self.m2)
 
+    def __morse_internal__(self, x: float) -> float:
+        return MorsePotential.morse_potential_function(x, self.De, self.Vre, self.re, self.a)
+
     @staticmethod
     def psi(x: float, n: int, w0: float, m1: float = 1, m2: float = 1) -> float:
-        planck_constant = 2
+        planck_constant = 40
         reduced_planck_constant = planck_constant / (2 * np.pi)
         mu = m1 * m2 / (m1 + m2) # Reduced mass
-        alpha = mu * w0 / 10
+        alpha = mu * w0 / reduced_planck_constant
 
         f1 = (alpha / np.pi) ** (1/4)
         f2 = sqrt(1/(2**n * factorial(n)))
         f3 = exp(-alpha * x**2 / 2)
         f4 = MorsePotential.hermite_function(n, sqrt(alpha) * x)
 
-        print(f1, f2, f3, f4)
         return f1 * f2 * f3 * f4
 
     @staticmethod
@@ -56,3 +66,9 @@ class MorsePotential(VGroup):
                 return 32 * x**5 - 160 * x**3 + 120 * x
             case 6:
                 return 64 * x**6 - 480 * x**4 + 720 * x**2 - 120
+
+    @staticmethod
+    def morse_potential_function(x: float, De: float, Vre: float, re: float, a: float) -> float:
+        value = De * (1 - exp(-a * (x - re)))**2 + Vre
+        print(value)
+        return value
