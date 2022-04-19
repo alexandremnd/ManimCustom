@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Any, TypeVar
-from manim import Mobject, Create, Animation, AnimationGroup
+from manim import Mobject, Create, Animation, AnimationGroup, Uncreate
 
 DEFAULT_ANIMATION_RUN_TIME = 1
 
@@ -42,6 +42,16 @@ class CreateSimultaneous(CustomAnimation):
 
     def run_animation(self, scene: BetterScene) -> None:
         anim: tuple[Create] = tuple([Create(obj) for obj in self.obj])
+
+        scene.play(*anim, run_time=self.run_time)
+
+class UncreateMultiple(CustomAnimation):
+    def __init__(self, *args: Mobject, run_time: float = DEFAULT_ANIMATION_RUN_TIME) -> None:
+        self.obj: tuple[Mobject] = args
+        self.run_time: float = run_time
+
+    def run_animation(self, scene: BetterScene) -> None:
+        anim: tuple[Uncreate] = tuple([Uncreate(obj) for obj in self.obj])
 
         scene.play(*anim, run_time=self.run_time)
 

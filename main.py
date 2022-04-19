@@ -29,7 +29,7 @@ class Introduction(BetterScene):
         self.wait(2)
 
 
-class Elongation(Scene):
+class ElongationTest(BetterScene):
     def construct(self):
         carbone = Atom(0.4, GRAY, LEFT + UP)
         o1 = Atom(0.4, RED, RIGHT + UP)
@@ -37,20 +37,18 @@ class Elongation(Scene):
         o3 = Atom(0.4, RED, 2 * LEFT + 2 * UP)
         pb = Atom(0.6, BLUE, RIGHT + DOWN)
 
-        liaison_c_o1 = Line(carbone.get_center(), o1.get_center())
-        liaison_c_o2 = Line(carbone.get_center(), o2.get_center())
-        liaison_o1_pb = Line(o1.get_center(), pb.get_center())
-        liaison_o2_pb = Line(o2.get_center(), pb.get_center())
-        liaison_c_o3_1 = Line(carbone.get_center() + UR * 0.05, o3.get_center() + UR * 0.05)
-        liaison_c_o3_2 = Line(carbone.get_center() + DL * 0.05, o3.get_center() + DL * 0.05)
+        liaison_c_o1 = Bound(carbone, o1, 1)
+        liaison_c_o2 = Bound(carbone, o2, 1)
+        liaison_c_o3 = Bound(carbone, o3, 2)
+        liaison_o2_pb = Bound(o2, pb, 1)
+        liaison_o1_pb = Bound(o1, pb, 1)
 
-        self.add(liaison_c_o3_1, liaison_c_o3_2, liaison_o2_pb, liaison_o1_pb, liaison_c_o2, liaison_c_o1)
+        self.add(liaison_c_o1, liaison_c_o2, liaison_c_o3, liaison_o1_pb, liaison_o2_pb)
         self.add(carbone, o1, o2, o3, pb)
         self.wait(1)
-        self.play(Uncreate(liaison_c_o3_1), Uncreate(liaison_c_o3_2), Uncreate(liaison_c_o2), Uncreate(liaison_c_o1), FadeOut(carbone, o3))
-        self.wait(1)
+        self.animate(UncreateMultiple(liaison_c_o3, liaison_c_o2, liaison_c_o1, run_time=0.3), FadeOut(carbone, o3))
 
-
+        self.play(pb.animate.move_to(ORIGIN), o2.animate.shift(2 * UP))
 
 
 class WavelengthIllustration(Scene):

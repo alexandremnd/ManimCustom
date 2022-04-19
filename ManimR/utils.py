@@ -12,4 +12,4 @@ def wiggle_around(radius: float, origin=ORIGIN) -> np.ndarray:
     rand_radius = rng.random() * radius
     rand_angle = rng.random() * 2 * np.pi
     x, y = rand_radius * np.cos(rand_angle), rand_radius * np.sin(rand_angle)
-    return [x, y, 0]
+    return np.array([x, y, 0])
