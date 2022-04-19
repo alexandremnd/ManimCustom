@@ -63,16 +63,4 @@ class WavelengthIllustration(Scene):
                                fps * animation_duration + 1)
         self.curve = FunctionGraph(sine, x_range=[-4, 4], color=RED)
 
-        def draw_wave():
-            frame = (w.get_value() - 1.5) / 3.8 * fps * animation_duration
-            frame = int(frame)
-            c = color[frame]
-            return FunctionGraph(sine, x_range=[-4, 4], color=c)
 
-        wave = always_redraw(draw_wave)
-
-        self.add(wave)
-        self.wait(1)
-        self.play(w.animate.set_value(5.2), run_time=animation_duration)
-        self.wait(2)
-        pass
