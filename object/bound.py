@@ -47,10 +47,8 @@ class Bound(VGroup):
         elif self.bound_count == 2:
             point1 = c1 + delta * (2 * line_index - 1) * self.atom1.radius / 3
             point2 = c2 + delta * (2 * line_index - 1) * self.atom2.radius / 3
-            print(line_index, point1, point2)
             return Line(point1, point2)
         else:
             point1 = c1 + delta * (line_index - 1) * self.atom1.radius / 3
             point2 = c2 + delta * (line_index - 1) * self.atom2.radius / 3
-            print(delta)
             return Line(point1, point2)

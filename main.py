@@ -35,7 +35,7 @@ class ElongationTest(BetterScene):
         o1 = Atom(0.4, RED, RIGHT + UP)
         o2 = Atom(0.4, RED, LEFT + DOWN)
         o3 = Atom(0.4, RED, 2 * LEFT + 2 * UP)
-        pb = Atom(0.6, BLUE, RIGHT + DOWN)
+        pb = Atom(0.4, BLUE, RIGHT + DOWN)
 
         liaison_c_o1 = Bound(carbone, o1, 1)
         liaison_c_o2 = Bound(carbone, o2, 1)
@@ -49,6 +49,8 @@ class ElongationTest(BetterScene):
         self.animate(UncreateMultiple(liaison_c_o3, liaison_c_o2, liaison_c_o1, run_time=0.3), FadeOut(carbone, o3))
 
         self.play(pb.animate.move_to(ORIGIN), o2.animate.shift(2 * UP))
+        self.play(o1.animate.scale(0.5), o2.animate.scale(2))
+        self.play(o1.animate.scale(0.5), o2.animate.scale(2))
 
 
 class WavelengthIllustration(Scene):
