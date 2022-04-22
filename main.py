@@ -49,8 +49,29 @@ class ElongationTest(BetterScene):
         self.animate(UncreateMultiple(liaison_c_o3, liaison_c_o2, liaison_c_o1, run_time=0.3), FadeOut(carbone, o3))
 
         self.play(pb.animate.move_to(ORIGIN), o2.animate.shift(2 * UP))
-        self.play(o1.animate.scale(0.5), o2.animate.scale(2))
-        self.play(o1.animate.scale(0.5), o2.animate.scale(2))
+        self.play(o1.animate.shift(0.5 * UR), o2.animate.shift(0.5 * UL))
+        self.play(o1.animate.shift(-UR), o2.animate.shift(- UL))
+        self.play(o1.animate.shift(UR), o2.animate.shift(UL))
+        self.play(o1.animate.shift(-0.5 * UR), o2.animate.shift(-0.5 * UL))
+        self.wait(2)
+
+        self.play(o1.animate.shift(0.5 * UR), o2.animate.shift(-0.5 * UL))
+        self.play(o1.animate.shift(-UR), o2.animate.shift(UL))
+        self.play(o1.animate.shift(UR), o2.animate.shift(-UL))
+        self.play(o1.animate.shift(-0.5 * UR), o2.animate.shift(0.5 * UL))
+
+        # TODO: Animation de cisaillement ("bras/ange"), et d'avant/arrière
+        # TODO: Animation ressort -> potentiel harmonique de la mécanique classique avec w = sqrt(k/mu), mu = masse réduite
+        # TODO: Potentiel harmonique -> niveau d'énergie pour absorption des photons
+        # TODO: Enonciation de la probabilité de passage d'un état à un autre -> différents niveaux d'absorptions
+        # TODO: Mise en scène d'une spectroscopie en temps réel -> on trace l'absorbance en même temps
+        # TODO: On analyse le tableau puis conclusion / ouverture sur la réflectographie qui ouvre sur de nouvelles façons de voir les oeuvres
+
+
+
+        self.wait(2)
+
+
 
 
 class WavelengthIllustration(Scene):
