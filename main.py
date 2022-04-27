@@ -48,6 +48,18 @@ class ElongationTest(BetterScene):
         self.wait(1)
         self.animate(UncreateMultiple(liaison_c_o3, liaison_c_o2, liaison_c_o1, run_time=0.3), FadeOut(carbone, o3))
 
+        def draw_spring_1():
+            return Spring(o1, pb, 7, 0.2)
+
+        def draw_spring_2():
+            return Spring(o2, pb, 7, 0.2)
+
+        spring_o1_pb = always_redraw(draw_spring_1)
+        spring_o2_pb = always_redraw(draw_spring_2)
+
+
+        self.animate(UncreateMultiple(liaison_o2_pb, liaison_o1_pb), CreateSimultaneous(spring_o1_pb, spring_o2_pb))
+
         self.play(pb.animate.move_to(ORIGIN), o2.animate.shift(2 * UP))
 
         symetric = Text("Symétrique").next_to(pb, UP).shift(2.5 * UP)
@@ -75,21 +87,9 @@ class ElongationTest(BetterScene):
         # TODO: Mise en scène d'une spectroscopie en temps réel -> on trace l'absorbance en même temps
         # TODO: On analyse le tableau puis conclusion / ouverture sur la réflectographie qui ouvre sur de nouvelles façons de voir les oeuvres
 
+        # self.wait(2)
 
-
-        self.wait(2)
-
-
-
-
-class WavelengthIllustration(Scene):
+class Ressort(BetterScene):
     def construct(self):
-        animation_duration = 5
-        fps = self.camera.frame_rate
-        w = ValueTracker(1.5)
-        sine = lambda x: 0.3 * np.sin(w.get_value() * x)
-        color = color_gradient([RED_D, PURE_RED, ORANGE, YELLOW, GREEN, BLUE_D, PURE_BLUE, "#FF00FF"],
-                               fps * animation_duration + 1)
-        self.curve = FunctionGraph(sine, x_range=[-4, 4], color=RED)
 
 

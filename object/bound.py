@@ -1,5 +1,3 @@
-import numpy as np
-
 from ManimR import *
 from object import *
 
