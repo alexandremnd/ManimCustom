@@ -49,16 +49,24 @@ class ElongationTest(BetterScene):
         self.animate(UncreateMultiple(liaison_c_o3, liaison_c_o2, liaison_c_o1, run_time=0.3), FadeOut(carbone, o3))
 
         self.play(pb.animate.move_to(ORIGIN), o2.animate.shift(2 * UP))
-        self.play(o1.animate.shift(0.5 * UR), o2.animate.shift(0.5 * UL))
-        self.play(o1.animate.shift(-UR), o2.animate.shift(- UL))
-        self.play(o1.animate.shift(UR), o2.animate.shift(UL))
-        self.play(o1.animate.shift(-0.5 * UR), o2.animate.shift(-0.5 * UL))
-        self.wait(2)
 
-        self.play(o1.animate.shift(0.5 * UR), o2.animate.shift(-0.5 * UL))
-        self.play(o1.animate.shift(-UR), o2.animate.shift(UL))
-        self.play(o1.animate.shift(UR), o2.animate.shift(-UL))
-        self.play(o1.animate.shift(-0.5 * UR), o2.animate.shift(0.5 * UL))
+        symetric = Text("Symétrique").next_to(pb, UP).shift(2.5 * UP)
+        antisymetric = Text("Antisymétrique").next_to(pb, UP).shift(2.5 * UP)
+
+        self.play(Write(symetric))
+        self.play(Rotate(o1, angle=PI/8, about_point=ORIGIN), Rotate(o2, angle=-PI/8, about_point=ORIGIN))
+        for i in range(2):
+            self.play(Rotate(o1, angle=(-1)**(i + 1) * PI / 4, about_point=ORIGIN), Rotate(o2, angle=(-1)**i * PI / 4, about_point=ORIGIN))
+        self.play(Rotate(o1, angle=-PI/8, about_point=ORIGIN), Rotate(o2, angle=PI/8, about_point=ORIGIN))
+
+        self.play(Transform(symetric, antisymetric))
+        self.play(Rotate(o1, angle=PI / 8, about_point=ORIGIN),
+                  Rotate(o2, angle=PI / 8, about_point=ORIGIN))
+        for i in range(1, 3):
+            self.play(Rotate(o1, angle=(-1) ** i * PI / 4, about_point=ORIGIN),
+                      Rotate(o2, angle=(-1) ** i * PI / 4, about_point=ORIGIN))
+        self.play(Rotate(o1, angle=-PI / 8, about_point=ORIGIN),
+                  Rotate(o2, angle=-PI / 8, about_point=ORIGIN))
 
         # TODO: Animation de cisaillement ("bras/ange"), et d'avant/arrière
         # TODO: Animation ressort -> potentiel harmonique de la mécanique classique avec w = sqrt(k/mu), mu = masse réduite
