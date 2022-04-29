@@ -28,6 +28,11 @@ class Introduction(BetterScene):
         self.play(Write(title))
         self.wait(2)
 
+class Citation(BetterScene):
+    def construct(self):
+        citation = Text("Envisager l’art sous l’angle de ses matériaux \n amène à privilégier les pratiques \n plus que la considération des œuvres closes et fermées", font="Karla")
+        self.add(citation)
+
 
 class ElongationTest(BetterScene):
     def construct(self):
@@ -57,6 +62,7 @@ class ElongationTest(BetterScene):
         spring_o1_pb = always_redraw(draw_spring_1)
         spring_o2_pb = always_redraw(draw_spring_2)
 
+        self.play(Circumscribe(o1, Circle))
 
         self.animate(UncreateMultiple(liaison_o2_pb, liaison_o1_pb), CreateSimultaneous(spring_o1_pb, spring_o2_pb))
 
@@ -88,8 +94,5 @@ class ElongationTest(BetterScene):
         # TODO: On analyse le tableau puis conclusion / ouverture sur la réflectographie qui ouvre sur de nouvelles façons de voir les oeuvres
 
         # self.wait(2)
-
-class Ressort(BetterScene):
-    def construct(self):
 
 
