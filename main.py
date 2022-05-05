@@ -30,8 +30,17 @@ class Introduction(BetterScene):
 
 class Citation(BetterScene):
     def construct(self):
-        citation = Text("Envisager l’art sous l’angle de ses matériaux \n amène à privilégier les pratiques \n plus que la considération des œuvres closes et fermées", font="Karla")
-        self.add(citation)
+        citation1 = Text("\"Envisager l'art sous l'angle de ses matériaux", font="Karla", font_size=25)
+        citation2 = Text("amène à privilégier les pratiques plus que la", font="Karla", font_size=25)
+        citation3 = Text("considération des oeuvres closes et fermées\"", font="Karla", font_size=25)
+        group = VGroup(citation1, citation2, citation3).arrange(DOWN, buff=DEFAULT_MOBJECT_TO_MOBJECT_BUFFER/2)
+
+        author = Text("-Florence de Mèredieu", color="#18a5d4", font="Karla", font_size=20, weight=BOLD)
+        author.next_to(group, ORIGIN, aligned_edge=RIGHT).shift(DOWN)
+
+        self.play(Write(group), run_time=9)
+        self.wait(1)
+        self.play(Write(author))
 
 
 class ElongationTest(BetterScene):
