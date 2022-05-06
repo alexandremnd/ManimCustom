@@ -105,3 +105,30 @@ class ElongationTest(BetterScene):
         # self.wait(2)
 
 
+class PotentielHarmonique(BetterScene):
+    def construct(self) -> None:
+        ax = Axes(
+            x_range=[0, 5, 1],
+            x_length=7,
+            y_length=7,
+            y_range=[-2, 6, 1],
+            tips=True,
+            axis_config={"include_numbers": False},
+            y_axis_config={"scaling": LinearBase()},
+        )
+
+        a, re = 7, 2
+        labels = ax.get_axis_labels(x_label='r', y_label='E').set_color(WHITE)
+        graph = ax.plot(lambda x: a * (x - re) ** 2, x_range=[1.15, 2.85], use_smoothing=True)
+
+        self.animate(CreateSimultaneous(ax, graph, labels))
+        for E in range(1, 5):
+            x1 = (2 * re + np.sqrt(4 * E / a)) / 2
+            x2 = (2 * re - np.sqrt(4 * E / a)) / 2
+
+            point1 = ax.coords_to_point(*[x1, E, 0])
+            point2 = ax.coords_to_point(*[x2, E, 0])
+
+            self.play(Create(Line(point1, point2)), run_time=0.2)
+
+        self.wait(1)
