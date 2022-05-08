@@ -1,7 +1,47 @@
+import wave
 from ManimR import *
 from object import *
+import json
+
+with open("data/lead_white.json") as f:
+    jsonObject = json.load(f)
+
+data = jsonObject["series"]["Submitter"]
+
+wavenumber = []
+absorbance = []
+for key in data:
+    wavenumber.append(round(float(key), 8))
+    absorbance.append(max(round(data[key], 8), 0))
+    
+wavenumber = np.array(wavenumber)
+absorbance = np.array(absorbance)
+    
+    
+# fig, ax = plt.subplots()
+# ax.plot(wavenumber, absorbance) # Transmitance = 10**(-absorbance)
+# ax.invert_xaxis()
+# # ax.set_ylim(0, 0.20)
+# plt.show()
+
 
 config.background_color = "#212121"
+
+
+class Citation(BetterScene):
+    def construct(self):
+        citation1 = Text("\"Envisager l'art sous l'angle de ses matériaux", font="Karla", font_size=25)
+        citation2 = Text("amène à privilégier les pratiques plus que la", font="Karla", font_size=25)
+        citation3 = Text("considération des oeuvres closes et fermées\"", font="Karla", font_size=25)
+        group = VGroup(citation1, citation2, citation3).arrange(DOWN, buff=DEFAULT_MOBJECT_TO_MOBJECT_BUFFER/2)
+
+        author = Text("-Florence de Mèredieu", color="#18a5d4", font="Karla", font_size=20, weight=BOLD)
+        author.next_to(group, ORIGIN, aligned_edge=RIGHT).shift(DOWN)
+
+        self.play(Write(group), run_time=9)
+        self.wait(1)
+        self.play(Write(author))
+
 
 class Introduction(BetterScene):
     def construct(self):
@@ -18,8 +58,7 @@ class Introduction(BetterScene):
         alek = Text("Alexandre MENARD", font_size=20, font="Karla")
         golem = Text("Florent VIEILLEDENT", font_size=20, font="Karla")
         nilo = Text("Nilo RANCHY", font_size=20, font="Karla")
-        edouard = Text("Edouard SADEK", font_size=20, font="Karla")
-        name = VGroup(alek, golem, nilo, edouard).arrange(DOWN, buff=0.1).next_to(title, DOWN, buff=0.3)
+        name = VGroup(alek, golem, nilo).arrange(DOWN, buff=0.1).next_to(title, DOWN, buff=0.3)
 
         self.add(logo_upsud)
         self.add(theme)
@@ -28,19 +67,37 @@ class Introduction(BetterScene):
         self.play(Write(title))
         self.wait(2)
 
-class Citation(BetterScene):
+
+class MomentDipolaire(BetterScene):
     def construct(self):
-        citation1 = Text("\"Envisager l'art sous l'angle de ses matériaux", font="Karla", font_size=25)
-        citation2 = Text("amène à privilégier les pratiques plus que la", font="Karla", font_size=25)
-        citation3 = Text("considération des oeuvres closes et fermées\"", font="Karla", font_size=25)
-        group = VGroup(citation1, citation2, citation3).arrange(DOWN, buff=DEFAULT_MOBJECT_TO_MOBJECT_BUFFER/2)
+        lead = Atom(0.5, BLUE, 0.5 * DOWN)
+        oxygen1 = Atom(0.4, RED, 0.5 * UP + LEFT)
+        oxygen2 = Atom(0.4, RED, 0.5 * UP + RIGHT)
+        h1 = Atom(0.2, WHITE, oxygen1.get_center() + 0.3 * UL)
+        h2 = Atom(0.2, WHITE, oxygen2.get_center() + 0.3 * UR)
 
-        author = Text("-Florence de Mèredieu", color="#18a5d4", font="Karla", font_size=20, weight=BOLD)
-        author.next_to(group, ORIGIN, aligned_edge=RIGHT).shift(DOWN)
+        alcool1 = VGroup(h1, oxygen1)
+        alcool2 = VGroup(h2, oxygen2)
 
-        self.play(Write(group), run_time=9)
-        self.wait(1)
-        self.play(Write(author))
+        bound_lead_ox1 = Bound(lead, oxygen1, 1)
+        bound_lead_ox2 = Bound(lead, oxygen2, 1)
+
+        def dipolar_redraw():
+            lead_pos = lead.get_center()
+            positive_center = lead_pos
+            negative_center = (oxygen1.get_center() - lead_pos) + (oxygen2.get_center() - lead_pos)
+
+            return Arrow(start=negative_center, end=positive_center, stroke_width=1.5, buff=0.75, tip_length=0.2, max_tip_length_to_length_ratio=0.5)
+
+        dipolar_moment = always_redraw(dipolar_redraw)
+
+        self.add(bound_lead_ox1, bound_lead_ox2, alcool1, alcool2, lead)
+        self.play(Create(dipolar_moment))
+
+        self.wait(0.5)
+
+        # TODO: C'est de la grosse merde, ça n'existe pas comme vibration active en infrarouge
+        self.play(alcool1.animate.shift(UL), alcool2.animate.shift(UR))
 
 
 class ElongationTest(BetterScene):
@@ -102,7 +159,35 @@ class ElongationTest(BetterScene):
         # TODO: Mise en scène d'une spectroscopie en temps réel -> on trace l'absorbance en même temps
         # TODO: On analyse le tableau puis conclusion / ouverture sur la réflectographie qui ouvre sur de nouvelles façons de voir les oeuvres
 
-        # self.wait(2)
+        self.wait(2)
+
+
+class Ressort(BetterScene):
+    def construct(self) -> None:
+        lead = Atom(1, BLUE, 2 * LEFT)
+        oxygen = Atom(0.3, RED, 2 * RIGHT)
+        ressort = always_redraw(lambda: Spring(lead, oxygen, 11, 0.3))
+
+        self.add(lead, oxygen)
+        self.play(Create(ressort))
+        self.wait(0.5)
+
+        self.elongation(oxygen, RIGHT, 10)
+
+        self.next_section()
+
+
+
+
+    def elongation(self, obj: Mobject, delta, count):
+        initial_position = obj.get_center()
+        x1 = initial_position + delta
+        x2 = initial_position - delta
+
+        for i in range(count):
+            self.play(obj.animate.move_to(x1 if i % 2 == 0 else x2))
+
+        self.play(obj.animate.move_to(initial_position))
 
 
 class PotentielHarmonique(BetterScene):
@@ -123,12 +208,23 @@ class PotentielHarmonique(BetterScene):
 
         self.animate(CreateSimultaneous(ax, graph, labels))
         for E in range(1, 5):
-            x1 = (2 * re + np.sqrt(4 * E / a)) / 2
-            x2 = (2 * re - np.sqrt(4 * E / a)) / 2
+            x2 = (2 * re + np.sqrt(4 * E / a)) / 2
+            x1 = (2 * re - np.sqrt(4 * E / a)) / 2
 
             point1 = ax.coords_to_point(*[x1, E, 0])
             point2 = ax.coords_to_point(*[x2, E, 0])
+            
+            level_tex = Tex(f"$\\nu_{E}$").scale(0.8).next_to(point2, RIGHT)
 
             self.play(Create(Line(point1, point2)), run_time=0.2)
+            self.play(Write(level_tex), run_time=0.1)
 
         self.wait(1)
+
+
+class Sandbox(BetterScene):
+    def construct(self):
+        omega = MathTex("\\omega = \\sqrt{\\frac{k}{\\mu}}")
+        self.add(omega)
+        self.wait(0.5)
+        pass
