@@ -96,8 +96,10 @@ class MomentDipolaire(BetterScene):
 
         self.wait(0.5)
 
-        # TODO: C'est de la grosse merde, ça n'existe pas comme vibration active en infrarouge
-        self.play(alcool1.animate.shift(UL), alcool2.animate.shift(UR))
+        alcool1_symetric = elongate(alcool1, UL, 5)
+        alcool2_symetric = elongate(alcool2, UR, 5)
+
+        self.play(alcool1_symetric[0])
 
 
 class ElongationTest(BetterScene):
@@ -172,22 +174,9 @@ class Ressort(BetterScene):
         self.play(Create(ressort))
         self.wait(0.5)
 
-        self.elongation(oxygen, RIGHT, 10)
+        elongation(oxygen, RIGHT, 10)
 
         self.next_section()
-
-
-
-
-    def elongation(self, obj: Mobject, delta, count):
-        initial_position = obj.get_center()
-        x1 = initial_position + delta
-        x2 = initial_position - delta
-
-        for i in range(count):
-            self.play(obj.animate.move_to(x1 if i % 2 == 0 else x2))
-
-        self.play(obj.animate.move_to(initial_position))
 
 
 class PotentielHarmonique(BetterScene):
