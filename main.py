@@ -1,7 +1,10 @@
-import wave
+import json
+
+import numpy as np
+import math
+
 from ManimR import *
 from object import *
-import json
 
 with open("data/lead_white.json") as f:
     jsonObject = json.load(f)
@@ -87,19 +90,62 @@ class MomentDipolaire(BetterScene):
             positive_center = lead_pos
             negative_center = (oxygen1.get_center() - lead_pos) + (oxygen2.get_center() - lead_pos)
 
-            return Arrow(start=negative_center, end=positive_center, stroke_width=1.5, buff=0.75, tip_length=0.2, max_tip_length_to_length_ratio=0.5)
+            arrow = Arrow(start=negative_center, end=positive_center, stroke_width=1.5, buff=0.5, tip_length=0.2, max_tip_length_to_length_ratio=0.5)
+            mu = MathTex("\\vec{\\mu}").next_to(arrow, UP).scale(0.8)
+
+            return VGroup(arrow, mu)
 
         dipolar_moment = always_redraw(dipolar_redraw)
 
         self.add(bound_lead_ox1, bound_lead_ox2, alcool1, alcool2, lead)
         self.play(Create(dipolar_moment))
 
-        self.wait(0.5)
+        self.wait()
 
-        alcool1_symetric = elongate(alcool1, UL, 5)
-        alcool2_symetric = elongate(alcool2, UR, 5)
+        elongate_two(self, alcool1, alcool2, 0.25 * UL, 0.25 * UR, 5)
+        self.wait()
+        elongate_two(self, alcool1, alcool2, 0.25 * UL, -0.25 * UR, 5)
 
-        self.play(alcool1_symetric[0])
+
+class VibrationMode(BetterScene):
+    def construct(self):
+        self.next_section(skip_animations=True)
+        original_compounds = PbMolecule()
+
+        x_list = [-4, -4, 0, 0, 4, 4]
+        y_list = [2, -2] * 3
+
+        compounds = []
+        for x, y in zip(x_list, y_list):
+            molecule = PbMolecule([x, y, 0])
+            compounds.append(molecule)
+
+        self.add(original_compounds)
+        self.play(Transform(VGroup(original_compounds), VGroup(*compounds)))
+        self.clear()
+        self.add(*compounds)
+        self.wait(0.25)
+
+        self.next_section()
+
+        anim0 = compounds[0].elongate(0.25, UL, UR, 10, 10)
+        anim1 = compounds[1].elongate(0.25, UL, UR, 10, 10, False)
+        anim2 = compounds[2].wagging(PI/8, 10, 10, True)
+        anim3 = compounds[3].wagging(PI/8, 10, 10, False)
+        for a0, a1, a2, a3 in zip(anim0, anim1, anim2, anim3):
+            self.play(*a0, *a1, *a2, *a3)
+        self.wait()
+
+        self.next_section()
+
+        # animations = []
+        # for i, (x, y) in enumerate(zip(x_list, y_list)):
+        #     animations.append(original_compounds[i].animate.move_to([x, y, 0]))
+        #
+        # self.add(*original_compounds)
+        # self.wait()
+        # self.play(*animations)
+        # self.wait()
 
 
 class ElongationTest(BetterScene):
@@ -174,8 +220,6 @@ class Ressort(BetterScene):
         self.play(Create(ressort))
         self.wait(0.5)
 
-        elongation(oxygen, RIGHT, 10)
-
         self.next_section()
 
 
@@ -217,3 +261,4 @@ class Sandbox(BetterScene):
         self.add(omega)
         self.wait(0.5)
         pass
+
