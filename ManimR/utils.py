@@ -1,6 +1,7 @@
 import numpy as np
 
 from manim import ORIGIN, UP, RIGHT, Mobject, AnimationGroup
+from copy import deepcopy
 
 
 def distance_between_points(point1: np.ndarray, point2: np.ndarray) -> float:

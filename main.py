@@ -1,7 +1,5 @@
 import json
-
-import numpy as np
-import math
+from itertools import zip_longest
 
 from ManimR import *
 from object import *
@@ -132,8 +130,8 @@ class VibrationMode(BetterScene):
         anim1 = compounds[1].elongate(0.25, UL, UR, 10, 10, False)
         anim2 = compounds[2].wagging(PI/8, 10, 10, True)
         anim3 = compounds[3].wagging(PI/8, 10, 10, False)
-        for a0, a1, a2, a3 in zip(anim0, anim1, anim2, anim3):
-            self.play(*a0, *a1, *a2, *a3)
+        for a0, a1, a2, a3 in zip_longest(anim0, anim1, anim2, anim3):
+            self.animate_unpack(a0, a1, a2, a3)
         self.wait()
 
         self.next_section()
@@ -261,4 +259,3 @@ class Sandbox(BetterScene):
         self.add(omega)
         self.wait(0.5)
         pass
-
