@@ -17,6 +17,7 @@ class PbMolecule(VGroup):
         self.bound_lead_ox1 = Bound(self.lead, self.oxygen1, 1)
         self.bound_lead_ox2 = Bound(self.lead, self.oxygen2, 1)
 
+        self.dipolar_width = 1.5
         self.dipolar_moment = always_redraw(self.dipolar_redraw)
 
         self.add(self.bound_lead_ox1, self.bound_lead_ox2, self.alcool1, self.alcool2, self.lead, self.dipolar_moment)
@@ -25,15 +26,15 @@ class PbMolecule(VGroup):
     def dipolar_redraw(self):
         lead_pos = self.lead.get_center()
         positive_center = lead_pos
-        negative_center = (self.oxygen1.get_center() - lead_pos) + (self.oxygen2.get_center() - lead_pos) + lead_pos
+        negative_center = (self.alcool1.get_center() - lead_pos) + (self.alcool2.get_center() - lead_pos) + lead_pos
 
-        arrow = Arrow(start=negative_center, end=positive_center, stroke_width=1.5, buff=0.6, tip_length=0.2,
+        arrow = Arrow(start=negative_center, end=positive_center, stroke_width=self.dipolar_width, buff=0.6, tip_length=0.2,
                       max_tip_length_to_length_ratio=0.5)
         mu = MathTex("\\vec{\\mu}").next_to(arrow, UP).scale(0.8)
 
         return VGroup(arrow, mu)
 
-    def elongate(self, amplitude, delta1, delta2, count, run_time = 1, symetric = True):
+    def stretching(self, amplitude, delta1, delta2, count, run_time = 1, symetric = True):
         obj1_pos_i = self.alcool1.get_center()
         obj2_pos_i = self.alcool2.get_center()
 
@@ -53,19 +54,20 @@ class PbMolecule(VGroup):
         anim2 = self.alcool2.animate(run_time=run_time / (count + 1)).move_to(obj2_pos_i)
         yield anim1, anim2
 
-    def wagging(self, amplitude, count, run_time = 1, symetric = True):
+    def scissoring(self, amplitude, count, run_time = 1, symetric = True):
+        run_time /= count + (0 if count % 2 == 0 else 1)
         for i in range(count):
             angle1 = amplitude if i % 2 == 0 else -amplitude
             angle2 = -amplitude if i % 2 == 0 else amplitude
             angle2 *= 1 if symetric else -1 # anti_symetric angle
 
-            anim1 = self.alcool1.animate(run_time=run_time/(count + 1)).rotate(angle=angle1, about_point=self.lead.get_center())
-            anim2 = self.alcool2.animate(run_time=run_time/(count + 1)).rotate(angle=angle2, about_point=self.lead.get_center())
+            anim1 = self.alcool1.animate(run_time=run_time).rotate(angle=angle1, about_point=self.lead.get_center())
+            anim2 = self.alcool2.animate(run_time=run_time).rotate(angle=angle2, about_point=self.lead.get_center())
             yield anim1, anim2
 
         if count % 2 != 0:
             angle1 = -amplitude
             angle2 = amplitude if symetric else -amplitude
-            anim1 = self.alcool1.animate(run_time=run_time/(count + 1)).rotate(angle=angle1, about_point=self.lead.get_center())
-            anim2 = self.alcool2.animate(run_time=run_time/(count + 1)).rotate(angle=angle2, about_point=self.lead.get_center())
+            anim1 = self.alcool1.animate(run_time=run_time).rotate(angle=angle1, about_point=self.lead.get_center())
+            anim2 = self.alcool2.animate(run_time=run_time).rotate(angle=angle2, about_point=self.lead.get_center())
             yield anim1, anim2
