@@ -78,10 +78,10 @@ class PbMoleculeSide(VGroup):
         super().__init__()
 
         self.lead = Atom(0.5, YELLOW_D, 0.5 * DOWN)
-        self.oxygen2 = Atom(0.2, RED, 0.5 * UP + OUT)
-        self.h2 = Atom(0.1, WHITE, self.oxygen2.get_center() + 0.1 * UP + OUT)
-        self.oxygen1 = Atom(0.4, RED, 0.5 * UP)
+        self.oxygen1 = Atom(0.2, RED, 0.5 * UP)
         self.h1 = Atom(0.1, WHITE, self.oxygen1.get_center() + 0.1 * UP)
+        self.oxygen2 = Atom(0.4, RED, 0.5 * UP + OUT)
+        self.h2 = Atom(0.2, WHITE, self.oxygen2.get_center() + 0.1 * UP)
 
         self.alcool1 = VGroup(self.h1, self.oxygen1)
         self.alcool2 = VGroup(self.h2, self.oxygen2)
@@ -92,7 +92,7 @@ class PbMoleculeSide(VGroup):
         self.dipolar_width = 1.5
         self.dipolar_moment = always_redraw(self.dipolar_redraw)
 
-        self.add(self.bound_lead_ox1, self.bound_lead_ox2, self.h1, self.h2, self.oxygen2, self.oxygen1, self.lead, self.dipolar_moment)
+        self.add(self.bound_lead_ox1, self.bound_lead_ox2, self.alcool1, self.alcool2, self.lead, self.dipolar_moment)
         self.move_to(position)
 
     def dipolar_redraw(self):
@@ -100,7 +100,7 @@ class PbMoleculeSide(VGroup):
         positive_center = lead_pos
         negative_center = (self.alcool1.get_center() - lead_pos) + (self.alcool2.get_center() - lead_pos) + lead_pos
 
-        arrow = Arrow(start=negative_center, end=positive_center, stroke_width=self.dipolar_width, buff=0.6, tip_length=0.2,
+        arrow = Arrow(start=negative_center + 0.2 * UP, end=positive_center, stroke_width=self.dipolar_width, buff=0.6, tip_length=0.2,
                       max_tip_length_to_length_ratio=0.5)
         mu = MathTex("\\vec{\\mu}").next_to(arrow, UP).scale(0.8)
 

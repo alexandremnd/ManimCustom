@@ -71,7 +71,7 @@ class Introduction(BetterScene):
 
 class VibrationMode(BetterScene):
     def construct(self):
-        self.next_section(skip_animations=True)
+        self.next_section(skip_animations=False)
         original_compounds = PbMolecule()
 
         x_list = [-4, -4, 0, 0]
@@ -98,13 +98,12 @@ class VibrationMode(BetterScene):
 
         anim0 = compounds[0].stretching(0.25, UL, UR, 10, 10)
         anim1 = compounds[1].stretching(0.25, UL, UR, 10, 10, False)
-        anim2 = compounds[2].scissoring(PI / 8, 10, 10)
-        anim3 = compounds[3].scissoring(PI / 8, 10, 10, False)
+        anim2 = compounds[2].scissoring(PI / 10, 10, 10)
+        anim3 = compounds[3].scissoring(PI / 10, 10, 10, False)
         anim4 = compounds[4].wagging(0.25 * LEFT, 10, 10)
         anim5 = compounds[5].wagging(0.25 * LEFT, 10, 10, False)
 
         for a0, a1, a2, a3, a4, a5 in zip_longest(anim0, anim1, anim2, anim3, anim4, anim5):
-            print(a5)
             self.animate_unpack(a0, a1, a2, a3, a4, a5)
         self.wait()
 

@@ -10,4 +10,4 @@ To render the video, we used the [Manim](https://www.manim.community/) library a
 
 # Instructions
 In case you want to render yourself this video, you can use the following command:
-> manim -pqp main.py [SceneToRender]
+> manim -pqh main.py [SceneToRender]
