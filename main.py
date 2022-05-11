@@ -69,70 +69,42 @@ class Introduction(BetterScene):
         self.wait(2)
 
 
-class MomentDipolaire(BetterScene):
-    def construct(self):
-        lead = Atom(0.5, BLUE, 0.5 * DOWN)
-        oxygen1 = Atom(0.4, RED, 0.5 * UP + LEFT)
-        oxygen2 = Atom(0.4, RED, 0.5 * UP + RIGHT)
-        h1 = Atom(0.2, WHITE, oxygen1.get_center() + 0.3 * UL)
-        h2 = Atom(0.2, WHITE, oxygen2.get_center() + 0.3 * UR)
-
-        alcool1 = VGroup(h1, oxygen1)
-        alcool2 = VGroup(h2, oxygen2)
-
-        bound_lead_ox1 = Bound(lead, oxygen1, 1)
-        bound_lead_ox2 = Bound(lead, oxygen2, 1)
-
-        def dipolar_redraw():
-            lead_pos = lead.get_center()
-            positive_center = lead_pos
-            negative_center = (oxygen1.get_center() - lead_pos) + (oxygen2.get_center() - lead_pos)
-
-            arrow = Arrow(start=negative_center, end=positive_center, stroke_width=1.5, buff=0.5, tip_length=0.2, max_tip_length_to_length_ratio=0.5)
-            mu = MathTex("\\vec{\\mu}").next_to(arrow, UP).scale(0.8)
-
-            return VGroup(arrow, mu)
-
-        dipolar_moment = always_redraw(dipolar_redraw)
-
-        self.add(bound_lead_ox1, bound_lead_ox2, alcool1, alcool2, lead)
-        self.play(Create(dipolar_moment))
-
-        self.wait()
-
-        elongate_two(self, alcool1, alcool2, 0.25 * UL, 0.25 * UR, 5)
-        self.wait()
-        elongate_two(self, alcool1, alcool2, 0.25 * UL, -0.25 * UR, 5)
-
-
 class VibrationMode(BetterScene):
     def construct(self):
         self.next_section(skip_animations=True)
         original_compounds = PbMolecule()
 
-        x_list = [-4, -4, 0, 0, 4, 4]
-        y_list = [2, -2] * 3
+        x_list = [-4, -4, 0, 0]
+        y_list = [2, -2] * 2
 
         compounds = []
         for x, y in zip(x_list, y_list):
             molecule = PbMolecule([x, y, 0])
             compounds.append(molecule)
 
+        compounds.append(PbMoleculeSide([4, 2, 0]))
+        compounds.append(PbMoleculeSide([4, -2, 0]))
+
         self.add(original_compounds)
         self.play(Transform(VGroup(original_compounds), VGroup(*compounds)))
         self.clear()
+
+        self.next_section(skip_animations=False)
+
         self.add(*compounds)
         self.wait(0.25)
 
-        self.next_section()
+        self.next_section(skip_animations=False)
 
         anim0 = compounds[0].stretching(0.25, UL, UR, 10, 10)
         anim1 = compounds[1].stretching(0.25, UL, UR, 10, 10, False)
         anim2 = compounds[2].scissoring(PI / 8, 10, 10)
         anim3 = compounds[3].scissoring(PI / 8, 10, 10, False)
-        anim4 = compounds[4].wagging(0.1, 10, 10)
-        anim5 = compounds[5].wagging(0.1, 10, 10, False)
+        anim4 = compounds[4].wagging(0.25 * LEFT, 10, 10)
+        anim5 = compounds[5].wagging(0.25 * LEFT, 10, 10, False)
+
         for a0, a1, a2, a3, a4, a5 in zip_longest(anim0, anim1, anim2, anim3, anim4, anim5):
+            print(a5)
             self.animate_unpack(a0, a1, a2, a3, a4, a5)
         self.wait()
 

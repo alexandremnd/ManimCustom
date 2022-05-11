@@ -3,5 +3,5 @@ from object.photon import Photon
 from object.energy_diagram import EnergyDiagram
 from object.bound import Bound
 from object.spring import Spring
-from object.molecule_pb import PbMolecule
+from object.molecule_pb import PbMolecule, PbMoleculeSide
 # from object.morse_potential import MorsePotential
