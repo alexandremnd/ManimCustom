@@ -23,14 +23,15 @@ class Photon(VGroup):
         self.wave_head.add_updater(lambda obj: obj.move_to(self.wave_photon.points[-1]))
 
         self.wave_photon.rotate(angle)
-        self.wave_photon.shift(end - self.wave_photon.points[-1])
+        #self.wave_photon.shift(end - self.wave_photon.points[-1])
+        self.wave_photon.shift(start)
 
         self.add(self.wave_photon)
-        self.add(self.wave_head)
+        #self.add(self.wave_head)
 
     @override_animation(Create)
     def __create_override(self):
         wave_creation = Create(self.wave_photon)
-        wave_head_add = Add(self.wave_head)
-        return AnimationPacker(wave_head_add, wave_creation)
+        # wave_head_add = Add(self.wave_head)
+        return wave_creation
 

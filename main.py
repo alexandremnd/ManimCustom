@@ -1,47 +1,35 @@
 import json
 from itertools import zip_longest
 
+import matplotlib.pyplot as plt
+import numpy as np
+
 from ManimR import *
 from object import *
 
-with open("data/lead_white.json") as f:
-    jsonObject = json.load(f)
-
-data = jsonObject["series"]["Submitter"]
-
-wavenumber = []
-absorbance = []
-for key in data:
-    wavenumber.append(round(float(key), 8))
-    absorbance.append(max(round(data[key], 8), 0))
-    
-wavenumber = np.array(wavenumber)
-absorbance = np.array(absorbance)
-    
-    
+# with open("data/painting.json") as f:
+#     jsonObject = json.load(f)
+#
+# data = jsonObject["series"]["Submitter"]
+#
+# wavenumber = []
+# absorbance = []
+# for key in data:
+#     wavenumber.append(round(float(key), 8))
+#     absorbance.append(max(round(data[key], 8), 0))
+#
+# wavenumber = np.array(wavenumber)
+# absorbance = np.array(absorbance)
+#
+#
 # fig, ax = plt.subplots()
-# ax.plot(wavenumber, absorbance) # Transmitance = 10**(-absorbance)
+# ax.plot(wavenumber, 10**(-absorbance)) # Transmitance = 10**(-absorbance)
 # ax.invert_xaxis()
 # # ax.set_ylim(0, 0.20)
 # plt.show()
 
 
 config.background_color = "#212121"
-
-
-class Citation(BetterScene):
-    def construct(self):
-        citation1 = Text("\"Envisager l'art sous l'angle de ses matériaux", font="Karla", font_size=25)
-        citation2 = Text("amène à privilégier les pratiques plus que la", font="Karla", font_size=25)
-        citation3 = Text("considération des oeuvres closes et fermées\"", font="Karla", font_size=25)
-        group = VGroup(citation1, citation2, citation3).arrange(DOWN, buff=DEFAULT_MOBJECT_TO_MOBJECT_BUFFER/2)
-
-        author = Text("-Florence de Mèredieu", color="#18a5d4", font="Karla", font_size=20, weight=BOLD)
-        author.next_to(group, ORIGIN, aligned_edge=RIGHT).shift(DOWN)
-
-        self.play(Write(group), run_time=9)
-        self.wait(1)
-        self.play(Write(author))
 
 
 class Introduction(BetterScene):
@@ -69,9 +57,74 @@ class Introduction(BetterScene):
         self.wait(2)
 
 
+class Citation(BetterScene):
+    def construct(self):
+        citation1 = Text("\"Envisager l'art sous l'angle de ses matériaux", font="Karla", font_size=25)
+        citation2 = Text("amène à privilégier les pratiques plus que la", font="Karla", font_size=25)
+        citation3 = Text("considération des oeuvres closes et fermées\"", font="Karla", font_size=25)
+        group = VGroup(citation1, citation2, citation3).arrange(DOWN, buff=DEFAULT_MOBJECT_TO_MOBJECT_BUFFER/2)
+
+        author = Text("-Florence de Mèredieu", color="#18a5d4", font="Karla", font_size=20, weight=BOLD)
+        author.next_to(group, ORIGIN, aligned_edge=RIGHT).shift(DOWN)
+
+        self.play(Write(group), run_time=9)
+        self.wait(1)
+        self.play(Write(author))
+
+class GlobalView(BetterScene):
+    def construct(self):
+        self.next_section(skip_animations=True)
+        waiting_logo = WaitingLogo()
+
+        for anim in waiting_logo.wait(3):
+            self.play(anim)
+
+        spectrometer = Rectangle(BLUE_D, height=1, width=2)
+        work = Line(3 * RIGHT + 2 * UP, 3 * RIGHT + 2 * DOWN, stroke_width=5)
+
+        def draw_spectro_title():
+            return Text("Spectromètre", font_size=18, font="Karla").move_to(spectrometer)
+
+        spectrometer_title = always_redraw(draw_spectro_title)
+        self.play(Transform(waiting_logo, VGroup(spectrometer, spectrometer_title, work)))
+
+        self.next_section()
+        self.add(line)
+
+class Graph(BetterScene):
+    def construct(self):
+        wavenumber = np.loadtxt("data/wavenumber.txt")
+        absorbance = np.loadtxt("data/absorbance.txt")
+
+        ax = Axes(
+            x_range=[wavenumber[-1], wavenumber[0], 1000],
+            x_length=7,
+            y_length=5,
+            y_range=[0, 0.45, 0.2],
+            tips=True,
+            axis_config={"include_numbers": True},
+            y_axis_config={"scaling": LinearBase()},
+        )
+        #ax.flip(UP)
+
+        nu = MathTex(r"\nu")
+        A = MathTex(r"A")
+        labels = ax.get_axis_labels(x_label=nu, y_label=A).set_color(WHITE)
+        graph = ax.plot_line_graph(wavenumber[::-1], absorbance[::-1], add_vertex_dots=False, stroke_width=2).set_color(WHITE).flip(UP)
+        for sub in ax.submobjects:
+            print(sub)
+
+        self.animate(CreateSimultaneous(ax, labels))
+        self.play(Create(graph))
+        self.wait()
+
+
+
+
+
 class VibrationMode(BetterScene):
     def construct(self):
-        self.next_section(skip_animations=False)
+        self.next_section(skip_animations=True)
         original_compounds = PbMolecule()
 
         x_list = [-4, -4, 0, 0]
@@ -89,17 +142,17 @@ class VibrationMode(BetterScene):
         self.play(Transform(VGroup(original_compounds), VGroup(*compounds)))
         self.clear()
 
-        self.next_section(skip_animations=False)
+        self.next_section(skip_animations=True)
 
         self.add(*compounds)
         self.wait(0.25)
 
-        self.next_section(skip_animations=False)
+        self.next_section(skip_animations=True)
 
         anim0 = compounds[0].stretching(0.25, UL, UR, 10, 10)
         anim1 = compounds[1].stretching(0.25, UL, UR, 10, 10, False)
-        anim2 = compounds[2].scissoring(PI / 10, 10, 10)
-        anim3 = compounds[3].scissoring(PI / 10, 10, 10, False)
+        anim2 = compounds[2].scissoring(PI / 12, 10, 10)
+        anim3 = compounds[3].scissoring(PI / 12, 10, 10, False)
         anim4 = compounds[4].wagging(0.25 * LEFT, 10, 10)
         anim5 = compounds[5].wagging(0.25 * LEFT, 10, 10, False)
 
@@ -107,78 +160,7 @@ class VibrationMode(BetterScene):
             self.animate_unpack(a0, a1, a2, a3, a4, a5)
         self.wait()
 
-        self.next_section()
-
-        # animations = []
-        # for i, (x, y) in enumerate(zip(x_list, y_list)):
-        #     animations.append(original_compounds[i].animate.move_to([x, y, 0]))
-        #
-        # self.add(*original_compounds)
-        # self.wait()
-        # self.play(*animations)
-        # self.wait()
-
-
-class ElongationTest(BetterScene):
-    def construct(self):
-        carbone = Atom(0.4, GRAY, LEFT + UP)
-        o1 = Atom(0.4, RED, RIGHT + UP)
-        o2 = Atom(0.4, RED, LEFT + DOWN)
-        o3 = Atom(0.4, RED, 2 * LEFT + 2 * UP)
-        pb = Atom(0.4, BLUE, RIGHT + DOWN)
-
-        liaison_c_o1 = Bound(carbone, o1, 1)
-        liaison_c_o2 = Bound(carbone, o2, 1)
-        liaison_c_o3 = Bound(carbone, o3, 2)
-        liaison_o2_pb = Bound(o2, pb, 1)
-        liaison_o1_pb = Bound(o1, pb, 1)
-
-        self.add(liaison_c_o1, liaison_c_o2, liaison_c_o3, liaison_o1_pb, liaison_o2_pb)
-        self.add(carbone, o1, o2, o3, pb)
-        self.wait(1)
-        self.animate(UncreateMultiple(liaison_c_o3, liaison_c_o2, liaison_c_o1, run_time=0.3), FadeOut(carbone, o3))
-
-        def draw_spring_1():
-            return Spring(o1, pb, 7, 0.2)
-
-        def draw_spring_2():
-            return Spring(o2, pb, 7, 0.2)
-
-        spring_o1_pb = always_redraw(draw_spring_1)
-        spring_o2_pb = always_redraw(draw_spring_2)
-
-        self.play(Circumscribe(o1, Circle))
-
-        self.animate(UncreateMultiple(liaison_o2_pb, liaison_o1_pb), CreateSimultaneous(spring_o1_pb, spring_o2_pb))
-
-        self.play(pb.animate.move_to(ORIGIN), o2.animate.shift(2 * UP))
-
-        symetric = Text("Symétrique").next_to(pb, UP).shift(2.5 * UP)
-        antisymetric = Text("Antisymétrique").next_to(pb, UP).shift(2.5 * UP)
-
-        self.play(Write(symetric))
-        self.play(Rotate(o1, angle=PI/8, about_point=ORIGIN), Rotate(o2, angle=-PI/8, about_point=ORIGIN))
-        for i in range(2):
-            self.play(Rotate(o1, angle=(-1)**(i + 1) * PI / 4, about_point=ORIGIN), Rotate(o2, angle=(-1)**i * PI / 4, about_point=ORIGIN))
-        self.play(Rotate(o1, angle=-PI/8, about_point=ORIGIN), Rotate(o2, angle=PI/8, about_point=ORIGIN))
-
-        self.play(Transform(symetric, antisymetric))
-        self.play(Rotate(o1, angle=PI / 8, about_point=ORIGIN),
-                  Rotate(o2, angle=PI / 8, about_point=ORIGIN))
-        for i in range(1, 3):
-            self.play(Rotate(o1, angle=(-1) ** i * PI / 4, about_point=ORIGIN),
-                      Rotate(o2, angle=(-1) ** i * PI / 4, about_point=ORIGIN))
-        self.play(Rotate(o1, angle=-PI / 8, about_point=ORIGIN),
-                  Rotate(o2, angle=-PI / 8, about_point=ORIGIN))
-
-        # TODO: Animation de cisaillement ("bras/ange"), et d'avant/arrière
-        # TODO: Animation ressort -> potentiel harmonique de la mécanique classique avec w = sqrt(k/mu), mu = masse réduite
-        # TODO: Potentiel harmonique -> niveau d'énergie pour absorption des photons
-        # TODO: Enonciation de la probabilité de passage d'un état à un autre -> différents niveaux d'absorptions
-        # TODO: Mise en scène d'une spectroscopie en temps réel -> on trace l'absorbance en même temps
-        # TODO: On analyse le tableau puis conclusion / ouverture sur la réflectographie qui ouvre sur de nouvelles façons de voir les oeuvres
-
-        self.wait(2)
+        self.next_section(skip_animations=False)
 
 
 class Ressort(BetterScene):
@@ -226,9 +208,30 @@ class PotentielHarmonique(BetterScene):
         self.wait(1)
 
 
-class Sandbox(BetterScene):
+class Poubelle(BetterScene):
     def construct(self):
-        omega = MathTex("\\omega = \\sqrt{\\frac{k}{\\mu}}")
-        self.add(omega)
-        self.wait(0.5)
-        pass
+        amplitude = 0.1
+        frequency = ValueTracker(10)
+
+        def photon_redraw():
+            coeff = -34
+            b = 1120
+            lam = coeff * frequency.get_value() + b
+            return Photon(spectrometer.get_corner(RIGHT), work.get_corner(LEFT), amplitude=amplitude,
+                          frequency=frequency.get_value())
+
+        def lambda_redraw():
+            coeff = -34
+            b = 1120
+            lam = coeff * frequency.get_value() + b
+            value = Text(f"{lam:.0f}nm").scale(0.5)
+            group = VGroup(lam_tex.copy(), value).arrange(RIGHT, buff=0.2).next_to(photon, DOWN).scale(0.5)
+            return group
+
+        lam_tex = MathTex(rf"\lambda = ")
+        photon = always_redraw(photon_redraw)
+        wavelength = always_redraw(lambda_redraw)
+
+        self.play(Create(photon), Create(wavelength))
+        self.play(frequency.animate.set_value(20))
+        self.wait()

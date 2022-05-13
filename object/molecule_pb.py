@@ -28,7 +28,7 @@ class PbMolecule(VGroup):
         positive_center = lead_pos
         negative_center = (self.alcool1.get_center() - lead_pos) + (self.alcool2.get_center() - lead_pos) + lead_pos
 
-        arrow = Arrow(start=negative_center, end=positive_center, stroke_width=self.dipolar_width, buff=0.6, tip_length=0.2,
+        arrow = Arrow(start=negative_center, end=positive_center, stroke_width=self.dipolar_width, buff=0.53, tip_length=0.2,
                       max_tip_length_to_length_ratio=0.5)
         mu = MathTex("\\vec{\\mu}").next_to(arrow, UP).scale(0.8)
 
@@ -62,13 +62,24 @@ class PbMolecule(VGroup):
             angle2 = -amplitude if i % 2 == 0 else amplitude
             angle2 *= 1 if symetric else -1 # anti_symetric angle
 
+            if i != 0 and not symetric:
+                angle1 *= 2
+                angle2 *= 2
+
             anim1 = self.alcool1.animate(run_time=run_time).rotate(angle=angle1, about_point=self.lead.get_center())
             anim2 = self.alcool2.animate(run_time=run_time).rotate(angle=angle2, about_point=self.lead.get_center())
             yield anim1, anim2
 
-        if count % 2 != 0:
+        if count % 2 != 0 and symetric:
             angle1 = -amplitude
             angle2 = amplitude if symetric else -amplitude
+            anim1 = self.alcool1.animate(run_time=run_time).rotate(angle=angle1, about_point=self.lead.get_center())
+            anim2 = self.alcool2.animate(run_time=run_time).rotate(angle=angle2, about_point=self.lead.get_center())
+            yield anim1, anim2
+        if not symetric:
+            angle1 = amplitude * (1 if count % 2 == 0 else -1)
+            angle2 = amplitude * (1 if count % 2 == 0 else -1)
+
             anim1 = self.alcool1.animate(run_time=run_time).rotate(angle=angle1, about_point=self.lead.get_center())
             anim2 = self.alcool2.animate(run_time=run_time).rotate(angle=angle2, about_point=self.lead.get_center())
             yield anim1, anim2

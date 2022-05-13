@@ -1,6 +1,6 @@
 import numpy as np
 
-from manim import ORIGIN, UP, RIGHT, Mobject, AnimationGroup
+from manim import ORIGIN, UP, RIGHT, Mobject, AnimationGroup, rgb_to_hex
 from copy import deepcopy
 
 
@@ -15,19 +15,60 @@ def wiggle_around(radius: float, origin=ORIGIN) -> np.ndarray:
     x, y = rand_radius * np.cos(rand_angle), rand_radius * np.sin(rand_angle)
     return np.array([x, y, 0])
 
-def elongate_two(scene, obj1, obj2, delta1, delta2, count):
-    obj1_initial_pos = obj1.get_center()
-    obj2_initial_pos = obj2.get_center()
-    obj1_x1= obj1_initial_pos + delta1
-    obj1_x2 = obj1_initial_pos - delta1
-    obj2_x1 = obj2_initial_pos + delta2
-    obj2_x2 = obj2_initial_pos - delta2
+def wavelength_to_rgb(wavelength, gamma=0.8):
 
-    for i in range(count):
-        anim1 = obj1.animate.move_to(obj1_x1 if i % 2 == 0 else obj1_x2)
-        anim2 = obj2.animate.move_to(obj2_x1 if i % 2 == 0 else obj2_x2)
-        scene.play(anim1, anim2)
+    '''This converts a given wavelength of light to an
+    approximate RGB color value. The wavelength must be given
+    in nanometers in the range from 380 nm through 750 nm
+    (789 THz through 400 THz).
 
-    scene.play(obj1.animate.move_to(obj1_initial_pos), obj2.animate.move_to(obj2_initial_pos))
+    Based on code by Dan Bruton
+    http://www.physics.sfasu.edu/astro/color/spectra.html
+    '''
 
-    return None
+    wavelength = float(wavelength)
+    if wavelength >= 380 and wavelength <= 440:
+        attenuation = 0.3 + 0.7 * (wavelength - 380) / (440 - 380)
+        R = ((-(wavelength - 440) / (440 - 380)) * attenuation) ** gamma
+        G = 0.0
+        B = (1.0 * attenuation) ** gamma
+    elif wavelength >= 440 and wavelength <= 490:
+        R = 0.0
+        G = ((wavelength - 440) / (490 - 440)) ** gamma
+        B = 1.0
+    elif wavelength >= 490 and wavelength <= 510:
+        R = 0.0
+        G = 1.0
+        B = (-(wavelength - 510) / (510 - 490)) ** gamma
+    elif wavelength >= 510 and wavelength <= 580:
+        R = ((wavelength - 510) / (580 - 510)) ** gamma
+        G = 1.0
+        B = 0.0
+    elif wavelength >= 580 and wavelength <= 645:
+        R = 1.0
+        G = (-(wavelength - 645) / (645 - 580)) ** gamma
+        B = 0.0
+    elif wavelength >= 645 and wavelength <= 750:
+        attenuation = 0.3 + 0.7 * (750 - wavelength) / (750 - 645)
+        R = (1.0 * attenuation) ** gamma
+        G = 0.0
+        B = 0.0
+    else:
+        R = 0.0
+        G = 0.0
+        B = 0.0
+    R *= 255
+    G *= 255
+    B *= 255
+    return (int(R), int(G), int(B))
+
+def wavelength_to_hex(wavelength):
+    if isinstance(wavelength, np.ndarray | tuple | list):
+        hex = []
+        for lam in wavelength:
+            hex.append(wavelength_to_hex(lam))
+        return hex
+    return rgb_to_hex(wavelength_to_rgb(wavelength))
+
+
+
