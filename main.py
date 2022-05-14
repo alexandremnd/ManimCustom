@@ -89,7 +89,24 @@ class GlobalView(BetterScene):
         self.play(Transform(waiting_logo, VGroup(spectrometer, spectrometer_title, work)))
 
         self.next_section()
-        self.add(line)
+
+        def draw_value():
+            text = Text(f"{wavenumber_tracker.get_value():.0f}").scale(0.6)
+            position = (spectrometer.get_corner(RIGHT) + work.get_corner(LEFT)) / 2
+            group = VGroup(lambda_tex.copy(), text, unit.copy()).arrange(RIGHT).move_to(position).shift(DOWN).scale(0.5)
+            return group
+
+        wavenumber_tracker = ValueTracker(4500)
+        lambda_tex = MathTex(r"\lambda = ")
+        unit = MathTex(r"cm^{-1}").scale(0.8)
+        value = always_redraw(draw_value)
+        photon_forward = Photon(spectrometer.get_corner(RIGHT) + 0.2 * DOWN, work.get_corner(LEFT), color=RED, amplitude=0.1)
+        photon_backward = Photon(work.get_corner(LEFT), spectrometer.get_corner(RIGHT) + 0.2 * UP, color=RED, width=2.5, amplitude=0.1)
+
+        self.play(Create(value))
+        self.play(Create(photon_forward))
+        self.play(FadeOut(photon_forward), Create(photon_backward))
+        self.wait()
 
 class Graph(BetterScene):
     def construct(self):
@@ -105,14 +122,22 @@ class Graph(BetterScene):
             axis_config={"include_numbers": True},
             y_axis_config={"scaling": LinearBase()},
         )
-        #ax.flip(UP)
 
         nu = MathTex(r"\nu")
         A = MathTex(r"A")
         labels = ax.get_axis_labels(x_label=nu, y_label=A).set_color(WHITE)
-        graph = ax.plot_line_graph(wavenumber[::-1], absorbance[::-1], add_vertex_dots=False, stroke_width=2).set_color(WHITE).flip(UP)
-        for sub in ax.submobjects:
-            print(sub)
+        graph = ax.plot_line_graph(wavenumber, absorbance, add_vertex_dots=False, stroke_width=2).set_color(WHITE).flip(UP)
+
+        # Inverts DecimalNumber on x-axis
+        x_axis: NumberLine = ax.get_axis(0)
+        value: list[NumberLine] = x_axis.submobjects[2].submobjects
+        new_pos =  []
+        for i in range(len(value)):
+            new_pos.append(value[i].get_center())
+        new_pos = new_pos[::-1]
+
+        for i, val in enumerate(value):
+            val.move_to(new_pos[i])
 
         self.animate(CreateSimultaneous(ax, labels))
         self.play(Create(graph))
