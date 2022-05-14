@@ -79,8 +79,8 @@ class GlobalView(BetterScene):
         for anim in waiting_logo.wait(3):
             self.play(anim)
 
-        spectrometer = Rectangle(BLUE_D, height=1, width=2)
-        work = Line(3 * RIGHT + 2 * UP, 3 * RIGHT + 2 * DOWN, stroke_width=5)
+        spectrometer = Rectangle(BLUE_D, height=1, width=2).shift(2 * RIGHT)
+        work = Line(3 * RIGHT + 2 * UP, 3 * RIGHT + 2 * DOWN, stroke_width=5).shift(2 * RIGHT)
 
         def draw_spectro_title():
             return Text("Spectromètre", font_size=18, font="Karla").move_to(spectrometer)
@@ -91,14 +91,13 @@ class GlobalView(BetterScene):
         self.next_section()
 
         def draw_value():
-            text = Text(f"{wavenumber_tracker.get_value():.0f}").scale(0.6)
+            text = Text(f"{wavenumber_tracker.get_value():.0f}cm⁻¹", t2s={'cm⁻¹':ITALIC}, font="Karla", t2f={'⁻': "Computer Modern"}).scale(0.6)
             position = (spectrometer.get_corner(RIGHT) + work.get_corner(LEFT)) / 2
-            group = VGroup(lambda_tex.copy(), text, unit.copy()).arrange(RIGHT).move_to(position).shift(DOWN).scale(0.5)
+            group = VGroup(lambda_tex.copy(), text).arrange(RIGHT).move_to(position).shift(DOWN).scale(0.5)
             return group
 
         wavenumber_tracker = ValueTracker(4500)
         lambda_tex = MathTex(r"\lambda = ")
-        unit = MathTex(r"cm^{-1}").scale(0.8)
         value = always_redraw(draw_value)
         photon_forward = Photon(spectrometer.get_corner(RIGHT) + 0.2 * DOWN, work.get_corner(LEFT), color=RED, amplitude=0.1)
         photon_backward = Photon(work.get_corner(LEFT), spectrometer.get_corner(RIGHT) + 0.2 * UP, color=RED, width=2.5, amplitude=0.1)
@@ -106,6 +105,42 @@ class GlobalView(BetterScene):
         self.play(Create(value))
         self.play(Create(photon_forward))
         self.play(FadeOut(photon_forward), Create(photon_backward))
+        self.wait()
+
+        # Graphing
+
+        wavenumber = np.loadtxt("data/wavenumber.txt")
+        absorbance = np.loadtxt("data/absorbance.txt")
+
+        ax = Axes(
+            x_range=[wavenumber[-1], wavenumber[0], 1000],
+            x_length=5,
+            y_length=4,
+            y_range=[0, 0.45, 0.2],
+            tips=True,
+            axis_config={"include_numbers": True},
+            y_axis_config={"scaling": LinearBase()},
+        ).to_edge(LEFT)
+
+        nu = MathTex(r"\nu (cm^{-1})").scale(0.4)
+        A = MathTex(r"Absorbance").scale(0.4)
+        labels = ax.get_axis_labels(x_label=nu, y_label=A).set_color(WHITE)
+        graph = ax.plot_line_graph(wavenumber, absorbance, add_vertex_dots=False, stroke_width=2).set_color(WHITE).flip(
+            UP)
+
+        # Inverts DecimalNumber on x-axis
+        x_axis: NumberLine = ax.get_axis(0)
+        value: list[NumberLine] = x_axis.submobjects[2].submobjects
+        new_pos = []
+        for i in range(len(value)):
+            new_pos.append(value[i].get_center())
+        new_pos = new_pos[::-1]
+
+        for i, val in enumerate(value):
+            val.move_to(new_pos[i])
+
+        self.animate(CreateSimultaneous(ax, labels))
+        self.play(Create(graph))
         self.wait()
 
 class Graph(BetterScene):
@@ -142,9 +177,6 @@ class Graph(BetterScene):
         self.animate(CreateSimultaneous(ax, labels))
         self.play(Create(graph))
         self.wait()
-
-
-
 
 
 class VibrationMode(BetterScene):
