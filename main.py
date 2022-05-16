@@ -71,6 +71,7 @@ class Citation(BetterScene):
         self.wait(1)
         self.play(Write(author))
 
+
 class GlobalView(BetterScene):
     def construct(self):
         self.next_section(skip_animations=True)
@@ -143,6 +144,7 @@ class GlobalView(BetterScene):
         self.play(Create(graph))
         self.wait()
 
+
 class Graph(BetterScene):
     def construct(self):
         wavenumber = np.loadtxt("data/wavenumber.txt")
@@ -177,6 +179,22 @@ class Graph(BetterScene):
         self.animate(CreateSimultaneous(ax, labels))
         self.play(Create(graph))
         self.wait()
+
+
+class FourierTransform(BetterScene):
+    def construct(self):
+        frequencies = [34, 88, 99, 55, 24]
+
+        def fun(x: float):
+            final = 0
+            for freq in frequencies:
+                final += np.cos(freq * x)
+
+            return final / len(frequencies)
+
+        fourier = FunctionGraph(fun, x_range=[0, 8, 0.1], use_smoothing=True).shift(4 * LEFT)
+        self.play(Create(fourier))
+
 
 
 class VibrationMode(BetterScene):
