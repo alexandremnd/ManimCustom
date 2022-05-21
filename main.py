@@ -52,9 +52,9 @@ class Introduction(BetterScene):
         self.add(logo_upsud)
         self.add(theme)
         self.add(name)
-        self.wait(3)
+        self.wait(5.5)
         self.play(Write(title))
-        self.wait(2)
+        self.wait(4.5)
 
 
 class Citation(BetterScene):
@@ -74,54 +74,72 @@ class Citation(BetterScene):
 
 class GlobalView(BetterScene):
     def construct(self):
-        self.next_section(skip_animations=True)
+        self.next_section(skip_animations=False)
         waiting_logo = WaitingLogo()
 
         for anim in waiting_logo.wait(3):
             self.play(anim)
 
-        spectrometer = Rectangle(BLUE_D, height=1, width=2).shift(2 * RIGHT)
-        work = Line(3 * RIGHT + 2 * UP, 3 * RIGHT + 2 * DOWN, stroke_width=5).shift(2 * RIGHT)
+        # Spectromètre
+        self.next_section()
+
+        spectrometer = Rectangle(BLUE_D, height=1, width=2)
+        work = Line(3 * RIGHT + 2 * UP, 3 * RIGHT + 2 * DOWN, stroke_width=5).shift(1 * RIGHT)
 
         def draw_spectro_title():
             return Text("Spectromètre", font_size=18, font="Karla").move_to(spectrometer)
 
         spectrometer_title = always_redraw(draw_spectro_title)
-        self.play(Transform(waiting_logo, VGroup(spectrometer, spectrometer_title, work)))
+        self.animate(FadeOut(waiting_logo), CreateSimultaneous(spectrometer, work, spectrometer_title))
 
-        self.next_section()
+        self.play(spectrometer.animate.shift(3 * LEFT).scale(2.5), work.animate.shift(2* RIGHT).scale(2))
 
-        def draw_value():
-            text = Text(f"{wavenumber_tracker.get_value():.0f}cm⁻¹", t2s={'cm⁻¹':ITALIC}, font="Karla", t2f={'⁻': "Computer Modern"}).scale(0.6)
-            position = (spectrometer.get_corner(RIGHT) + work.get_corner(LEFT)) / 2
-            group = VGroup(lambda_tex.copy(), text).arrange(RIGHT).move_to(position).shift(DOWN).scale(0.5)
-            return group
+        photon1_out = Photon(spectrometer.get_corner(RIGHT) + 1 * UP, work.get_corner(LEFT),amplitude=0.1, color=RED, width=5, frequency=10)
+        photon2_out = Photon(spectrometer.get_corner(RIGHT) + 0.5 * UP, work.get_corner(LEFT),amplitude=0.1, color=RED, width=5, frequency=15)
+        photon3_out = Photon(spectrometer.get_corner(RIGHT), work.get_corner(LEFT),amplitude=0.1, color=RED, width=5, frequency=20)
+        photon4_out = Photon(spectrometer.get_corner(RIGHT) - 0.5 * UP, work.get_corner(LEFT),amplitude=0.1, color=RED, width=5, frequency=25)
+        photon5_out = Photon(spectrometer.get_corner(RIGHT) - 1 * UP, work.get_corner(LEFT),amplitude=0.1, color=RED, width=5, frequency=30)
 
-        wavenumber_tracker = ValueTracker(4500)
-        lambda_tex = MathTex(r"\lambda = ")
-        value = always_redraw(draw_value)
-        photon_forward = Photon(spectrometer.get_corner(RIGHT) + 0.2 * DOWN, work.get_corner(LEFT), color=RED, amplitude=0.1)
-        photon_backward = Photon(work.get_corner(LEFT), spectrometer.get_corner(RIGHT) + 0.2 * UP, color=RED, width=2.5, amplitude=0.1)
+        self.animate(CreateSimultaneous(photon1_out, photon2_out, photon3_out, photon4_out, photon5_out))
 
-        self.play(Create(value))
-        self.play(Create(photon_forward))
-        self.play(FadeOut(photon_forward), Create(photon_backward))
+        frequency = np.array([2, 8, 15])
+        length = distance_between_points(spectrometer.get_corner(RIGHT), work.get_corner(LEFT) )
+        photon_backward = FunctionGraph(lambda x: np.sum(np.cos(frequency * x))/(10), x_range=[-length, 0]).move_to(spectrometer.get_corner(RIGHT), aligned_edge=LEFT).rotate(PI).set_color(RED)
+
+        self.play(FadeOut(photon1_out, photon2_out, photon3_out, photon4_out, photon5_out))
+        self.play(Create(photon_backward), run_time=3)
+
+        new_signal = FunctionGraph(lambda x: np.sum(np.cos(frequency * x)) / (5), x_range=[-4, 4]).set_color(RED)
+
+        self.play(FadeOut(spectrometer, spectrometer_title, work), Transform(photon_backward, new_signal, replace_mobject_with_target_in_scene=True))
+
+        self.wait(2)
+
+        signal1 = FunctionGraph(lambda x: np.cos(2 * x) / 2, x_range=[-4, 4]).set_color(RED).shift(2 * UP)
+        signal2 = FunctionGraph(lambda x: np.cos(8 * x) / 2, x_range=[-4, 4]).set_color(RED)
+        signal3 = FunctionGraph(lambda x: np.cos(15 * x) / 2, x_range=[-4, 4]).set_color(RED).shift(2 * DOWN)
+        signal_group = VGroup(signal1, signal2, signal3)
+
+        self.play(Transform(new_signal, signal_group, replace_mobject_with_target_in_scene=True))
+
         self.wait()
+        self.play(FadeOut(signal_group))
 
         # Graphing
+        self.next_section(skip_animations=False)
 
         wavenumber = np.loadtxt("data/wavenumber.txt")
         absorbance = np.loadtxt("data/absorbance.txt")
 
         ax = Axes(
             x_range=[wavenumber[-1], wavenumber[0], 1000],
-            x_length=5,
-            y_length=4,
+            x_length=7,
+            y_length=6,
             y_range=[0, 0.45, 0.2],
             tips=True,
             axis_config={"include_numbers": True},
             y_axis_config={"scaling": LinearBase()},
-        ).to_edge(LEFT)
+        )
 
         nu = MathTex(r"\nu (cm^{-1})").scale(0.4)
         A = MathTex(r"Absorbance").scale(0.4)
@@ -143,58 +161,6 @@ class GlobalView(BetterScene):
         self.animate(CreateSimultaneous(ax, labels))
         self.play(Create(graph))
         self.wait()
-
-
-class Graph(BetterScene):
-    def construct(self):
-        wavenumber = np.loadtxt("data/wavenumber.txt")
-        absorbance = np.loadtxt("data/absorbance.txt")
-
-        ax = Axes(
-            x_range=[wavenumber[-1], wavenumber[0], 1000],
-            x_length=7,
-            y_length=5,
-            y_range=[0, 0.45, 0.2],
-            tips=True,
-            axis_config={"include_numbers": True},
-            y_axis_config={"scaling": LinearBase()},
-        )
-
-        nu = MathTex(r"\nu")
-        A = MathTex(r"A")
-        labels = ax.get_axis_labels(x_label=nu, y_label=A).set_color(WHITE)
-        graph = ax.plot_line_graph(wavenumber, absorbance, add_vertex_dots=False, stroke_width=2).set_color(WHITE).flip(UP)
-
-        # Inverts DecimalNumber on x-axis
-        x_axis: NumberLine = ax.get_axis(0)
-        value: list[NumberLine] = x_axis.submobjects[2].submobjects
-        new_pos =  []
-        for i in range(len(value)):
-            new_pos.append(value[i].get_center())
-        new_pos = new_pos[::-1]
-
-        for i, val in enumerate(value):
-            val.move_to(new_pos[i])
-
-        self.animate(CreateSimultaneous(ax, labels))
-        self.play(Create(graph))
-        self.wait()
-
-
-class FourierTransform(BetterScene):
-    def construct(self):
-        frequencies = [34, 88, 99, 55, 24]
-
-        def fun(x: float):
-            final = 0
-            for freq in frequencies:
-                final += np.cos(freq * x)
-
-            return final / len(frequencies)
-
-        fourier = FunctionGraph(fun, x_range=[0, 8, 0.1], use_smoothing=True).shift(4 * LEFT)
-        self.play(Create(fourier))
-
 
 
 class VibrationMode(BetterScene):
@@ -285,28 +251,5 @@ class PotentielHarmonique(BetterScene):
 
 class Poubelle(BetterScene):
     def construct(self):
-        amplitude = 0.1
-        frequency = ValueTracker(10)
-
-        def photon_redraw():
-            coeff = -34
-            b = 1120
-            lam = coeff * frequency.get_value() + b
-            return Photon(spectrometer.get_corner(RIGHT), work.get_corner(LEFT), amplitude=amplitude,
-                          frequency=frequency.get_value())
-
-        def lambda_redraw():
-            coeff = -34
-            b = 1120
-            lam = coeff * frequency.get_value() + b
-            value = Text(f"{lam:.0f}nm").scale(0.5)
-            group = VGroup(lam_tex.copy(), value).arrange(RIGHT, buff=0.2).next_to(photon, DOWN).scale(0.5)
-            return group
-
-        lam_tex = MathTex(rf"\lambda = ")
-        photon = always_redraw(photon_redraw)
-        wavelength = always_redraw(lambda_redraw)
-
-        self.play(Create(photon), Create(wavelength))
-        self.play(frequency.animate.set_value(20))
-        self.wait()
+        fraction = MathTex(r"\sqrt a \over \sqrt b")
+        self.add(fraction)
