@@ -279,6 +279,7 @@ class VibrationMode(BetterScene):
 
 class Ressort(BetterScene):
     def construct(self) -> None:
+        self.next_section(skip_animations=True)
         ax = Axes(
             x_range=[0, 5, 1],
             x_length=7,
@@ -315,18 +316,21 @@ class Ressort(BetterScene):
         self.wait(1)
         x2, x1 = self.get_solution(1, re, a)
         amplitude_arrow_1 = DoubleArrow(start=ax.coords_to_point(x1, 1.6, 0), end=ax.coords_to_point(x2, 1.6, 0), buff=0.1)
-        self.play(oxygen.animate.move_to(ax.coords_to_point(x1, 1, 0)), Create(amplitude_arrow_1), run_time=0.75)
-        self.play(oxygen.animate.move_to(ax.coords_to_point(x2, 1, 0)), run_time=0.75)
-        self.play(oxygen.animate.move_to(ax.coords_to_point(x1, 1, 0)), run_time=0.75)
-        self.play(oxygen.animate.move_to(ax.coords_to_point(x2, 1, 0)), run_time=0.75)
+        self.next_section()
+        self.play(oxygen.animate.move_to(ax.coords_to_point(x1, 1, 0)), Create(amplitude_arrow_1), run_time=0.5)
+        self.play(oxygen.animate.move_to(ax.coords_to_point(x2, 1, 0)), run_time=0.5)
+        self.play(oxygen.animate.move_to(ax.coords_to_point(x1, 1, 0)), run_time=0.5)
+        self.play(oxygen.animate.move_to(ax.coords_to_point(x2, 1, 0)), run_time=0.5)
 
         x2, x1 = self.get_solution(3, re, a)
         amplitude_arrow_2 = DoubleArrow(start=ax.coords_to_point(x1, 3.6, 0), end=ax.coords_to_point(x2, 3.6, 0), buff=0.1)
-        self.play(lead.animate.move_to(ax.coords_to_point(0, 3, 0)), oxygen.animate.move_to(ax.coords_to_point(re, 3, 0)), Transform(amplitude_arrow_1, amplitude_arrow_2, replace_mobject_with_target_in_scene=True), run_time=0.75)
-        self.play(oxygen.animate.move_to(ax.coords_to_point(x1, 3, 0)), run_time=0.75)
-        self.play(oxygen.animate.move_to(ax.coords_to_point(x2, 3, 0)), run_time=0.75)
-        self.play(oxygen.animate.move_to(ax.coords_to_point(x1, 3, 0)), run_time=0.75)
-        self.play(oxygen.animate.move_to(ax.coords_to_point(x2, 3, 0)), run_time=0.75)
+        self.play(lead.animate.move_to(ax.coords_to_point(0, 3, 0)), oxygen.animate.move_to(ax.coords_to_point(re, 3, 0)), Transform(amplitude_arrow_1, amplitude_arrow_2, replace_mobject_with_target_in_scene=True), run_time=0.25)
+        self.play(oxygen.animate.move_to(ax.coords_to_point(x1, 3, 0)), run_time=0.5)
+        self.play(oxygen.animate.move_to(ax.coords_to_point(x2, 3, 0)), run_time=0.5)
+        self.play(oxygen.animate.move_to(ax.coords_to_point(x1, 3, 0)), run_time=0.5)
+        self.play(oxygen.animate.move_to(ax.coords_to_point(x2, 3, 0)), run_time=0.5)
+
+        self.next_section(skip_animations=True)
 
         self.wait()
 
@@ -393,15 +397,69 @@ class Ressort(BetterScene):
         x1 = (2 * re - np.sqrt(4 * E / a)) / 2
         return x1, x2
 
-class Conclusion(ZoomedScene):
+
+class Conclusion(BetterScene):
     def construct(self):
-        img = ImageMobject("img.png")
-        title = Text("Francesco Hayez, L'ultimo bacio dato a Giulietta da Romeo, 1823", font="Karla", font_size=18).next_to(img, DOWN)
-        #title = Text("Francesco Hayez, L'ultimo bacio dato a Giulietta da Romeo, 1823", font="Karla", font_size=18).next_to(img, DOWN)
-        dot = Dot(0.15 * UP + 2.35 * RIGHT)
+        img = ImageMobject("1.png")
+        title = Text("Francesco Hayez, Pietro l'Eremita", font="Karla",
+                     font_size=18).next_to(img, DOWN)
+
+        self.wait()
+        self.play(FadeIn(img), Write(title))
+        self.wait(2)
+
+        wavenumber = np.loadtxt("data/wavenumber.txt")
+        absorbance = np.loadtxt("data/absorbance.txt")
+
+        ax = Axes(
+            x_range=[wavenumber[-1], wavenumber[0], 1000],
+            x_length=7,
+            y_length=6,
+            y_range=[0, 0.45, 0.2],
+            tips=True,
+            axis_config={"include_numbers": True},
+            y_axis_config={"scaling": LinearBase()},
+        )
+
+        nu = MathTex(r"\nu (cm^{-1})").scale(0.4)
+        A = MathTex(r"Absorbance").scale(0.4)
+        labels = ax.get_axis_labels(x_label=nu, y_label=A).set_color(WHITE)
+        graph = ax.plot_line_graph(wavenumber, absorbance, add_vertex_dots=False, stroke_width=2).set_color(WHITE).flip(
+            UP)
+
+        # Inverts DecimalNumber on x-axis
+        x_axis: NumberLine = ax.get_axis(0)
+        value: list[NumberLine] = x_axis.submobjects[2].submobjects
+        new_pos = []
+        for i in range(len(value)):
+            new_pos.append(value[i].get_center())
+        new_pos = new_pos[::-1]
+
+        for i, val in enumerate(value):
+            val.move_to(new_pos[i])
+
+        graph_group = VGroup(ax, labels, graph)
+
+        self.play(FadeOut(img), Unwrite(title), Create(graph_group))
+
+        self.wait(1)
+
+        def get_real_pos(nu):
+            return - nu + 5500
+
+        get4700 = ax.coords_to_point(get_real_pos(4700), 0.07)
+        circ = Circle(2, BLUE_C).move_to(get4700)
+
+        self.play(Create(circ))
 
 
-        molecule = ChemWithName("""CH_3-[1]-[2]=[3]-[5]-[3]=[5]-[6]-[5]=[6]-[7]-[6]-[7]-[6]-[7]-[1]-[2]-[1](=[7]O)-[2]O-[1]-[7](-[6]-[7]O-[6](=[5]O)-[7]-[6]-[7]-[1]-[7]-[1]-[7]-[1]=[2]-[3]-[2]=[1]-[7]-[6]-[7]-[6]-[7]CH_3)-[1]O-[7](=[6]O)-[1]-[7]-[1]-[7]-[1]-[7]-[1]-[2]=[3]-[5]-[3]-[5]-[3]-[5]-[3]-[2]-[1]CH_3""", "Huile de lin")
-        molecule.scale_to_fit_height(6)
-        self.add(img, title, dot)
-        #self.play(FadeIn(img), Write(title))
+
+exit()
+img = ImageMobject("img.png")
+title = Text("Francesco Hayez, L'ultimo bacio dato a Giulietta da Romeo, 1823", font="Karla", font_size=18).next_to(img, DOWN)
+#title = Text("Francesco Hayez, L'ultimo bacio dato a Giulietta da Romeo, 1823", font="Karla", font_size=18).next_to(img, DOWN)
+dot = Dot(0.15 * UP + 2.35 * RIGHT)
+
+
+molecule = ChemWithName("""CH_3-[1]-[2]=[3]-[5]-[3]=[5]-[6]-[5]=[6]-[7]-[6]-[7]-[6]-[7]-[1]-[2]-[1](=[7]O)-[2]O-[1]-[7](-[6]-[7]O-[6](=[5]O)-[7]-[6]-[7]-[1]-[7]-[1]-[7]-[1]=[2]-[3]-[2]=[1]-[7]-[6]-[7]-[6]-[7]CH_3)-[1]O-[7](=[6]O)-[1]-[7]-[1]-[7]-[1]-[7]-[1]-[2]=[3]-[5]-[3]-[5]-[3]-[5]-[3]-[2]-[1]CH_3""", "Huile de lin")
+molecule.scale_to_fit_height(6)
