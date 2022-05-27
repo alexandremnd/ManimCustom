@@ -75,7 +75,7 @@ class Citation(BetterScene):
         self.play(Write(author)) # 9.6s
         self.wait(4.4)
 
-        global_circle = Circle(radius=2.5, color=BLUE_B)
+        global_circle = Circle(radius=2.2, color=BLUE_B)
         title = Text("Oeuvre", font="Karla").next_to(global_circle, DOWN)
         little_circle = Circle(radius=0.8, color=BLUE_D).set_fill(BLUE_D, opacity=0.5)
         little_circle_reductrice = VGroup(*[Text(txt, font_size=14, font="Karla") for txt in ["Connaissances", "sur", "l'oeuvre"]]).move_to(little_circle).arrange(DOWN, buff=0.1)
@@ -103,8 +103,8 @@ class Citation(BetterScene):
         carbon = Atom(0.4, GRAY, pos)
         ox1 = Atom(0.4, RED, pos + 2 * LEFT)
         ox2 = Atom(0.4, RED, pos + 2 * RIGHT)
-        bound1 = Bound(carbon, ox1, 2)
-        bound2 = Bound(carbon, ox2, 2)
+        bound1 = Bound(carbon, ox1, 2).set_z_index(-1)
+        bound2 = Bound(carbon, ox2, 2).set_z_index(-1)
 
         self.wait(1.5)
         self.play(Create(spectroscopie))
@@ -194,12 +194,12 @@ class GlobalView(BetterScene):
         ax = Axes(
             x_range=[wavenumber[-1], wavenumber[0], 1000],
             x_length=7,
-            y_length=6,
+            y_length=5,
             y_range=[0, 0.45, 0.2],
             tips=True,
             axis_config={"include_numbers": True},
             y_axis_config={"scaling": LinearBase()},
-        )
+        ).shift(0.2 * UP)
 
         nu = MathTex(r"\nu (cm^{-1})").scale(0.4)
         A = MathTex(r"Absorbance").scale(0.4)
@@ -279,16 +279,16 @@ class VibrationMode(BetterScene):
 
 class Ressort(BetterScene):
     def construct(self) -> None:
-        self.next_section(skip_animations=True)
+        self.next_section(skip_animations=False)
         ax = Axes(
             x_range=[0, 5, 1],
             x_length=7,
             y_length=7,
-            y_range=[-2, 6, 1],
+            y_range=[-1, 6, 1],
             tips=True,
             axis_config={"include_numbers": False},
             y_axis_config={"scaling": LinearBase()},
-        ).set_z_index(-1)
+        ).set_z_index(-1).shift(0.4 * UP)
 
         a, re = 7, 2
         lead = Atom(0.5, BLUE, ax.coords_to_point(0, 0, 0))
@@ -316,7 +316,7 @@ class Ressort(BetterScene):
         self.wait(1)
         x2, x1 = self.get_solution(1, re, a)
         amplitude_arrow_1 = DoubleArrow(start=ax.coords_to_point(x1, 1.6, 0), end=ax.coords_to_point(x2, 1.6, 0), buff=0.1)
-        self.next_section()
+        self.next_section(skip_animations=True)
         self.play(oxygen.animate.move_to(ax.coords_to_point(x1, 1, 0)), Create(amplitude_arrow_1), run_time=0.5)
         self.play(oxygen.animate.move_to(ax.coords_to_point(x2, 1, 0)), run_time=0.5)
         self.play(oxygen.animate.move_to(ax.coords_to_point(x1, 1, 0)), run_time=0.5)
@@ -416,12 +416,12 @@ class Conclusion(BetterScene):
         ax = Axes(
             x_range=[wavenumber[-1], wavenumber[0], 1000],
             x_length=8,
-            y_length=6,
+            y_length=5,
             y_range=[0, 0.45, 0.2],
             tips=True,
             axis_config={"include_numbers": True},
             y_axis_config={"scaling": LinearBase()},
-        )
+        ).shift(0.5 * UP)
 
         nu = MathTex(r"\nu (cm^{-1})").scale(0.4)
         A = MathTex(r"Absorbance").scale(0.4)
@@ -523,7 +523,81 @@ class MesCouilles(BetterScene):
         self.play(FadeOut(waiting))
         self.wait()
 
+class YEET(BetterScene):
+    def construct(self):
+        wavenumber = np.loadtxt("data/wavenumber.txt")
+        absorbance = np.loadtxt("data/absorbance.txt")
 
+        ax = Axes(
+            x_range=[wavenumber[-1], wavenumber[0], 1000],
+            x_length=8,
+            y_length=5,
+            y_range=[0, 0.45, 0.2],
+            tips=True,
+            axis_config={"include_numbers": True},
+            y_axis_config={"scaling": LinearBase()},
+        ).shift(0.5 * UP)
+
+        nu = MathTex(r"\nu (cm^{-1})").scale(0.4)
+        A = MathTex(r"Absorbance").scale(0.4)
+        labels = ax.get_axis_labels(x_label=nu, y_label=A).set_color(WHITE)
+        graph = ax.plot_line_graph(wavenumber, absorbance, add_vertex_dots=False, stroke_width=2).set_color(WHITE).flip(
+            UP)
+
+        # Inverts DecimalNumber on x-axis
+        x_axis: NumberLine = ax.get_axis(0)
+        value: list[NumberLine] = x_axis.submobjects[2].submobjects
+        new_pos = []
+        for i in range(len(value)):
+            new_pos.append(value[i].get_center())
+        new_pos = new_pos[::-1]
+
+        for i, val in enumerate(value):
+            val.move_to(new_pos[i])
+
+        graph_group = VGroup(ax, labels)
+
+        self.play(FadeOut(img), Unwrite(title), run_time=0.75)
+        self.play(Create(graph_group), Create(graph))
+
+        self.wait(1)
+
+        def get_real_pos(nu):
+            return - nu + 5500
+
+        ceton_ch2_pos = ax.coords_to_point(get_real_pos(4760), 0.04)
+        linseed_pos = ax.coords_to_point(get_real_pos(4330), 0.12)
+        ceton_pos = ax.coords_to_point(get_real_pos(1790), 0.45)
+
+        circ1 = Circle(0.3, BLUE_D).move_to(ceton_ch2_pos)
+        circ2 = Circle(0.3, BLUE_D).move_to(linseed_pos)
+        circ3 = Circle(0.3, BLUE_D).move_to(ceton_pos)
+
+        line_ceton_ch2 = Arrow(end=circ1.get_corner(UP), start=circ1.get_corner(UP) + 0.7 * UP, buff=0.2)
+        line_ceton = Arrow(end=circ3.get_corner(RIGHT), start=circ3.get_corner(RIGHT) + RIGHT, buff=0.2)
+        line_linseed = Arrow(end=circ2.get_corner(UP), start=circ2.get_corner(UP) + UP, buff=0.2)
+
+        ceton1 = ChemObject("C=O")
+        ch2 = ChemObject("CH_2")
+        add = MathTex("+")
+        ceton_ch2 = VGroup(ceton1, add, ch2).arrange(DOWN).scale(0.5).next_to(line_ceton_ch2, UP)
+        ceton2 = ceton1.copy().next_to(line_ceton, RIGHT)
+        linseed = Text("Huile  de  lin", font="Karla", font_size=17).next_to(line_linseed, UP)
+
+        self.animate(CreateSimultaneous(circ1, circ3, line_ceton_ch2, line_ceton, ceton_ch2, ceton2))
+        self.wait()
+        self.animate(CreateSimultaneous(line_linseed, linseed, circ2))
+        self.wait()
+
+        molecule = ChemWithName(
+            """CH_3-[1]-[2]=[3]-[5]-[3]=[5]-[6]-[5]=[6]-[7]-[6]-[7]-[6]-[7]-[1]-[2]-[1](=[7]O)-[2]O-[1]-[7](-[6]-[7]O-[6](=[5]O)-[7]-[6]-[7]-[1]-[7]-[1]-[7]-[1]=[2]-[3]-[2]=[1]-[7]-[6]-[7]-[6]-[7]CH_3)-[1]O-[7](=[6]O)-[1]-[7]-[1]-[7]-[1]-[7]-[1]-[2]=[3]-[5]-[3]-[5]-[3]-[5]-[3]-[2]-[1]CH_3""",
+            "Huile de lin").scale_to_fit_height(5)
+
+        self.play(FadeOut(ax, labels, circ1, circ2, circ3, line_ceton_ch2, line_ceton, ceton_ch2, ceton2, line_linseed,
+                          linseed, graph), molecule.creation_anim())
+        self.wait()
+        self.play(FadeOut(molecule))
+        self.wait()
 
 img = ImageMobject("img.png")
 title = Text("Francesco Hayez, L'ultimo bacio dato a Giulietta da Romeo, 1823", font="Karla", font_size=18).next_to(img, DOWN)
