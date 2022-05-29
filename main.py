@@ -511,7 +511,7 @@ class Conclusion(BetterScene):
         self.play(FadeOut(waiting))
         self.wait()
 
-class MesCouilles(BetterScene):
+class Oui(BetterScene):
     def construct(self):
         waiting = WaitingLogo()
         self.play(FadeIn(waiting))
@@ -523,7 +523,7 @@ class MesCouilles(BetterScene):
         self.play(FadeOut(waiting))
         self.wait()
 
-class YEET(BetterScene):
+class Oui2(BetterScene):
     def construct(self):
         wavenumber = np.loadtxt("data/wavenumber.txt")
         absorbance = np.loadtxt("data/absorbance.txt")
