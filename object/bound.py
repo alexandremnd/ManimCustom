@@ -4,7 +4,7 @@ from object import *
 class Bound(VGroup):
     def __init__(self, atom1: Atom, atom2: Atom, bound_count: int):
         if bound_count == 0 or bound_count >= 4:
-            raise ValueError("bound_count can only be between 1 and 3 (or go fuck yourself :))")
+            raise ValueError("bound_count can only be between 1 and 3)")
         super().__init__()
 
         self.bound_count: int= bound_count
